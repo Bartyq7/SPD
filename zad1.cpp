@@ -11,9 +11,12 @@ public:
     int rj;
     int qj;
 };
+bool compareTasks(Task& a, Task & b) {
+    return a.j < b.j;
+}
 class Problem{
     std::vector<Task> task_instance;
-    int num_of_tasks;
+    int num_of_tasks=5;
     int C_max;
     public:
     void set_num_of_tasks(int number){
@@ -78,6 +81,16 @@ class Problem{
             task_instance.push_back(t1);
         }
     }
+   
+    void next_perm_fun(){
+        do {
+            for(auto &x : task_instance) {
+                std::cout << x.j << " ";
+            }
+            std::cout << std::endl;
+
+        } while (next_permutation(task_instance.begin(), task_instance.end(), compareTasks));
+    }
 };
 
 
@@ -104,24 +117,27 @@ int get_number_of_tasks(std::ifstream& cosik){
 int main(){
     srand(time(NULL));
 
-    std::ifstream file("SCHRAGE1.dat");
+    // std::ifstream file("SCHRAGE1.dat");
     
-    /*#####################################################
-       ^ Barteczku, Bartuniu strzel ino obsługę błędów ^
-    #####################################################*/
+    // if (!file.is_open()) {
+    //     std::cerr << "Blad: Nie udalo sie otworzyc pliku!" << std::endl;
+    //     return 1;
+    // }
 
 
     Problem p1;
-    p1.set_num_of_tasks(get_number_of_tasks(file));   // <- dziala igla
-    p1.read_from_file(file);
+    //p1.set_num_of_tasks(get_number_of_tasks(file));   // <- dziala igla
+    //p1.read_from_file(file);
+    p1.generate_instance();
+    p1.next_perm_fun();
     p1.print_tasks();
-    std::cout<<"\nCmax: "<<p1.calculate_Cmax()<<std::endl;
+    //std::cout<<"\nCmax: "<<p1.calculate_Cmax()<<std::endl;
     
     p1.sort_pj();
-    p1.print_tasks();
+    //p1.print_tasks();
     
     p1.sort_rj();
-    p1.print_tasks();
+    //p1.print_tasks();
 
 
 
