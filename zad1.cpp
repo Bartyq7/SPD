@@ -351,6 +351,58 @@ class Problem{
         std::cout<<"Cmax final 2 "<<Cmax_cr<<std::endl;
     }
 
+
+
+    void schrage_interruption(){
+        std::priority_queue<Task, std::vector<Task>, decltype(&compareTasksRj)> moundQueue(compareTasksRj);
+        std::priority_queue<Task, std::vector<Task>, decltype(&compareTasksQj)> moundByQj(compareTasksQj);
+        int time=0;
+        int Cmax=0;
+        int comparsion;
+        int last_qj=0;
+        int lastValue=0;
+        int value;
+        Task actual{0,0,0,INT_MAX};
+        Task next;
+        for(auto& x : task_instance){          
+            moundQueue.push(x);
+        }
+
+        while(!moundQueue.empty() || !moundByQj.empty()){
+           // std::this_thread::sleep_for(std::chrono::seconds(1));
+            while(!moundQueue.empty() && moundQueue.top().rj<=time){
+                //std::cout<<"rj<=time, rj: "<< moundQueue.top().rj<<" czas: "<<time<<std::endl;
+                moundByQj.push(moundQueue.top());
+                next=moundQueue.top();
+                moundQueue.pop();
+
+                if(next.qj>actual.qj){
+                    actual.pj=time-next.rj;
+                    time = next.rj;
+                    if(actual.pj>0){
+                        moundByQj.push(actual);
+                    }
+                }
+            }
+            if(moundByQj.empty()){
+                time=moundQueue.top().rj;
+                //std::cout<<"ByQ jest empty i czas ustawia na: "<<time<<std::endl;
+            }
+            else{
+               // std::cout<<"jest w else i aktualny czas na poczatku to: "<<time;
+                //solution.push_back(moundByQj.top());
+                next=moundByQj.top();
+                actual=next;
+                time=time+moundByQj.top().pj;
+                Cmax=std::max(Cmax,time+moundByQj.top().qj);
+                moundByQj.pop();
+                //std::cout<<" a na koncu czas: "<<time<<" Cmax: "<<Cmax<<std::endl;
+
+            }
+        }
+        std::cout<<"Cmax -> "<<Cmax<<std::endl;
+    }
+
 };
 
 
@@ -386,7 +438,7 @@ int main(){
     p1.set_num_of_tasks(get_number_of_tasks(file));   // <- dziala igla
     p1.read_from_file(file);
 
-    p1.print_tasks();
+    //p1.print_tasks();
 
 
     /*###########################
@@ -416,14 +468,13 @@ int main(){
     else if(console == 4){
         p1.create_algo_fun_2();
     }
-
-
-// kopiec priority cop
-//schrage to stroujesz po rj i pozniej jak masz dwa dostepne (lub wiecej) w tej chwili to porownujesz qj i ten kto ma wiekszego (qj'a) ten wchodzi pierwszy
+    else if(console ==5){
+        p1.schrage_interruption();
+    }
     auto koniec = std::chrono::high_resolution_clock::now();
     auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
         
     std::cout<<"Czas wykonania algorytmu: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    p1.print_solution();
+    //p1.print_solution(); //<- dla schrage interruption bez sensu jest to solution
     return 0;
 }
