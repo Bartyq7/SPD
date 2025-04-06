@@ -237,9 +237,119 @@ class Problem{
     //     time=time+last_qj;
     //     std::cout<<"Cmax: "<<time<<std::endl;
     }
+    void print_tasks_debug(const std::vector<Task>& tasks) {
+        std::cout << "j: \t rj \t pj \t qj\n\n";
+        for (int i = 0; i < tasks.size(); ++i) {
+            std::cout << tasks[i].j << " \t "
+                      << tasks[i].rj << " \t "
+                      << tasks[i].pj << " \t "
+                      << tasks[i].qj << std::endl;
+        }
+    }
+    int select_and_remove_min_pj_qj(int& Cmax) {
+        int min_index = -1;
+        int min_sum = INT_MAX;
+        // szuka minimalnego czasu z tych ktore maja mniejszego rj od Cmax
+        for (int i = 0; i < task_instance.size(); ++i) {
+            if (task_instance[i].rj <= Cmax) {
+                int sum = task_instance[i].pj + task_instance[i].qj;
+                if (sum < min_sum) {
+                    min_sum = sum;
+                    min_index = i;
+                }
+            }
+        }
+        //Jesli zadne nie ma mniejszego rj od Cmax to szuka tego ktory ma najblizszego rj
+        if (min_index == -1) {
+            int min_rj = INT_MAX;
+            for (int i = 0; i < task_instance.size(); ++i) {
+                if (task_instance[i].rj > Cmax && task_instance[i].rj < min_rj) {
+                    min_rj = task_instance[i].rj;
+                    min_index = i;
+                }
+            }
+        }
+        //std::cout<<"Cmax przed "<<Cmax<<std::endl;
+        Cmax = Cmax + task_instance[min_index].pj + task_instance[min_index].qj;
+        //std::cout<<"aktualne pj"<< task_instance[min_index].pj<<"aktualne qj"<<task_instance[min_index].qj<<std::endl;
+        //std::cout<<"Cmax po "<<Cmax<<std::endl;
+        task_instance.erase(task_instance.begin() + min_index); 
+        //print_tasks_debug(task_instance);
+        
+        if(task_instance.empty()){
+            return -2;
+        }
+        return min_index;
+    }
 
 
+    //okazuje sie ze to jest algorytm greedy?
+    void create_algo_fun(){
+        sort_rj();
+        //print_tasks();
+        int Cmax_cr = 0;
+        //sortuje po rj  i wybiera najkrotszy i potem zaczyna sie magia
+        Cmax_cr = task_instance[0].pj + task_instance[0].qj;
+        task_instance.erase(task_instance.begin());
 
+        int result = 0;
+        while (result!=-2)
+        {
+            result = select_and_remove_min_pj_qj(Cmax_cr);
+        }
+        std::cout<<"Cmax final "<<Cmax_cr<<std::endl;
+    }
+
+    int select_and_remove_max_pj_qj(int& Cmax) {
+        int max_index = -1;
+        int max_sum = INT_MIN;
+        // szuka maksymalnego czasu z tych ktore maja mniejszego rj od Cmax
+        for (int i = 0; i < task_instance.size(); ++i) {
+            if (task_instance[i].rj <= Cmax) {
+                int sum = task_instance[i].pj + task_instance[i].qj;
+                if (sum > max_sum) {
+                    max_sum = sum;
+                    max_index = i;
+                }
+            }
+        }
+        //Jesli zadne nie ma mniejszego rj od Cmax to szuka tego ktory ma najblizszego rj
+        if (max_index == -1) {
+            int min_rj = INT_MAX;
+            for (int i = 0; i < task_instance.size(); ++i) {
+                if (task_instance[i].rj > Cmax && task_instance[i].rj < min_rj) {
+                    min_rj = task_instance[i].rj;
+                    max_index = i;
+                }
+            }
+        }
+        //std::cout<<"Cmax przed "<<Cmax<<std::endl;
+        Cmax = Cmax + task_instance[max_index].pj + task_instance[max_index].qj;
+        //std::cout<<"aktualne pj"<< task_instance[max_index].pj<<"aktualne qj"<<task_instance[max_index].qj<<std::endl;
+        //std::cout<<"Cmax po "<<Cmax<<std::endl;
+        task_instance.erase(task_instance.begin() + max_index); 
+        //print_tasks_debug(task_instance);
+        
+        if(task_instance.empty()){
+            return -2;
+        }
+        return max_index;
+    }
+    void create_algo_fun_2(){
+        sort_rj();
+        //print_tasks();
+        int Cmax_cr = 0;
+        //sortuje po rj  i wybiera najkrotszy i potem zaczyna sie magia
+        Cmax_cr = task_instance[0].pj + task_instance[0].qj;
+        task_instance.erase(task_instance.begin());
+
+        int result = 0;
+        while (result!=-2)
+        {
+            result = select_and_remove_max_pj_qj(Cmax_cr);
+        }
+        std::cout<<"Cmax final 2 "<<Cmax_cr<<std::endl;
+    }
 
 };
 
@@ -263,11 +373,11 @@ int get_number_of_tasks(std::ifstream& cosik){
 
 int main(){
     srand(time(NULL));
-    int console=2;
+    int console=4;
     /*##########################################                
     ###    WCZYTANIE DANYCH/CONFIG OBIEKTU   ###
     ##########################################*/ 
-    std::ifstream file("SCHRAGE2.dat");
+    std::ifstream file("SCHRAGE3.dat");
     if (!file.is_open()) {
         std::cerr << "Blad: Nie udalo sie otworzyc pliku!" << std::endl;
         return 1;
@@ -294,16 +404,26 @@ int main(){
     /*#####################
     ###    SCHRAGE      ###
     #####################*/
-    if(console==2){
+    else if(console==2){
         p1.schrage_fun();
     }
+    //ogolnie to te dwa sa mega nieoptymalne ale sam je wymyslilem hehe
+    //ty okazuje sie ze moj wymyslony create_algo_fun to jest jakis algorytm greedy, wiec jestem sprytny jednak,
+    // chociaz nadal jest on kiepski dla zestawu SHRAGE2.txt xd
+    else if(console == 3){
+        p1.create_algo_fun();
+    }
+    else if(console == 4){
+        p1.create_algo_fun_2();
+    }
+
 
 // kopiec priority cop
 //schrage to stroujesz po rj i pozniej jak masz dwa dostepne (lub wiecej) w tej chwili to porownujesz qj i ten kto ma wiekszego (qj'a) ten wchodzi pierwszy
     auto koniec = std::chrono::high_resolution_clock::now();
     auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
         
-    std::cout<<"Czas wykonania alogyrtmu: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    std::cout<<"Czas wykonania algorytmu: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
     p1.print_solution();
     return 0;
 }
