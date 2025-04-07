@@ -95,8 +95,27 @@ class Problem{
     }
 
 
+    void sort_rj_fun(){
+        sort_rj();
+        int Cmax=calculate_Cmax();
+        std::cout<<"Cmax: "<<Cmax<<std::endl;
+    }
+
+    void sort_qj_fun(){
+        sort_qj();
+        int Cmax=calculate_Cmax();
+        std::cout<<"Cmax: "<<Cmax<<std::endl;
+    }
+
+    void sort_qj(){
+        std::sort(task_instance.begin(), task_instance.end(), [](const Task& a, const Task& b){return  a.qj<b.qj;});
+    }
+
+
     void sort_rj(){
         std::sort(task_instance.begin(), task_instance.end(), [](const Task& a, const Task& b){return  a.rj<b.rj;});
+
+
     }
 
 
@@ -425,11 +444,11 @@ int get_number_of_tasks(std::ifstream& cosik){
 
 int main(){
     srand(time(NULL));
-    int console=4;
+    int console=7;
     /*##########################################                
     ###    WCZYTANIE DANYCH/CONFIG OBIEKTU   ###
     ##########################################*/ 
-    std::ifstream file("SCHRAGE3.dat");
+    std::ifstream file("SCHRAGE1.dat");
     if (!file.is_open()) {
         std::cerr << "Blad: Nie udalo sie otworzyc pliku!" << std::endl;
         return 1;
@@ -470,6 +489,12 @@ int main(){
     }
     else if(console ==5){
         p1.schrage_interruption();
+    }
+    else if(console==6){
+        p1.sort_qj_fun();
+    }
+    else if(console==7){
+        p1.sort_rj_fun();
     }
     auto koniec = std::chrono::high_resolution_clock::now();
     auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
