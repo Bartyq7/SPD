@@ -523,7 +523,10 @@ int main(){
     // }
 
 
-
+    /*################################################################################
+    ###   Tak szczerze to nie wiem czemu tego w pętli nie zrobiłem xddd            ###
+    ###   jakies zacmienie chyba mialem albo cos ale juz trudno, poradzisz sobie   ###   
+    ################################################################################*/
 
 
     p1.set_num_of_tasks(6);
