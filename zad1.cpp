@@ -346,8 +346,8 @@ class Problem{
 
     int select_and_remove_max_pj_qj(int& Cmax) {
         int max_index = -1;
-        int max_sum = INT_MIN;
-        // szuka maksymalnego czasu z tych ktore maja mniejszego rj od Cmax
+        int max_sum = 0;
+        // szuka minimalnego czasu z tych ktore maja mniejszego rj od Cmax
         for (int i = 0; i < task_instance.size(); ++i) {
             if (task_instance[i].rj <= Cmax) {
                 int sum = task_instance[i].pj + task_instance[i].qj;
@@ -369,7 +369,7 @@ class Problem{
         }
         //std::cout<<"Cmax przed "<<Cmax<<std::endl;
         Cmax = Cmax + task_instance[max_index].pj + task_instance[max_index].qj;
-        //std::cout<<"aktualne pj"<< task_instance[max_index].pj<<"aktualne qj"<<task_instance[max_index].qj<<std::endl;
+        //std::cout<<"aktualne pj"<< task_instance[min_index].pj<<"aktualne qj"<<task_instance[min_index].qj<<std::endl;
         //std::cout<<"Cmax po "<<Cmax<<std::endl;
         task_instance.erase(task_instance.begin() + max_index); 
         //print_tasks_debug(task_instance);
@@ -572,6 +572,7 @@ int main(){
     //     return 1;
     // }
     Problem p1;
+
     // p1.set_num_of_tasks(get_number_of_tasks(file));   // <- dziala igla
     // p1.read_from_file(file);
 
@@ -694,18 +695,15 @@ int main(){
 
     //     p1.taskClear();
     // }
-    std::vector<int> instance_size = {5, 7, 9, 10, 11};
+    std::vector<int> instance_size = {5, 7, 9, 10};
 const int num_repeats = 50;
 
 for (int i = 0; i < instance_size.size(); i++) {
     std::cout << "Wielkosc instancji: " << instance_size[i] << std::endl;
 
-    double avg_time_przeglad = 0, avg_time_rj = 0, avg_time_qj = 0, avg_time_schrage = 0;
-    double avg_time_schrage_preempt = 0, avg_time_custom1 = 0;
-    double avg_result_przeglad = 0, avg_result_rj = 0, avg_result_qj = 0;
-    double avg_result_schrage = 0, avg_result_schrage_preempt = 0, avg_result_custom1 = 0;
-    double avg_error_rj = 0, avg_error_qj = 0, avg_error_schrage = 0;
-    double avg_error_schrage_preempt = 0, avg_error_custom1 = 0;
+    double avg_time_przeglad = 0, avg_time_rj = 0, avg_time_qj = 0, avg_time_schrage = 0, avg_time_inter = 0, avg_time_custom1 = 0,avg_time_custom2 = 0;
+    double avg_result_przeglad = 0, avg_result_rj = 0, avg_result_qj = 0, avg_result_schrage = 0, avg_result_inter = 0, avg_result_custom1 = 0, avg_result_custom2 = 0;
+    double avg_error_rj = 0, avg_error_qj = 0, avg_error_schrage = 0, avg_error_inter = 0, avg_error_custom1 = 0, avg_error_custom2 = 0;
 
     for (int j = 0; j < num_repeats; j++) {
         p1.set_num_of_tasks(instance_size[i]);
@@ -753,9 +751,9 @@ for (int i = 0; i < instance_size.size(); i++) {
         result = p1.schrage_interruption(tasks1);
         koniec = std::chrono::high_resolution_clock::now();
         time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
-        avg_time_schrage_preempt += time;
-        avg_result_schrage_preempt += result;
-        avg_error_schrage_preempt += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
+        avg_time_inter += time;
+        avg_result_inter += result;
+        //avg_error_inter += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
         // wlasna 1
         start = std::chrono::high_resolution_clock::now();
@@ -765,6 +763,14 @@ for (int i = 0; i < instance_size.size(); i++) {
         avg_time_custom1 += time;
         avg_result_custom1 += result;
         avg_error_custom1 += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
+        // wlasna 2
+        start = std::chrono::high_resolution_clock::now();
+        //result = p1.create_algo_fun_2();
+        // koniec = std::chrono::high_resolution_clock::now();
+        // time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        // avg_time_custom2 += time;
+        // avg_result_custom2 += result;
+        // avg_error_custom2 += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
         p1.taskClear();
     }
@@ -774,21 +780,24 @@ for (int i = 0; i < instance_size.size(); i++) {
     avg_time_rj /= num_repeats;
     avg_time_qj /= num_repeats;
     avg_time_schrage /= num_repeats;
-    avg_time_schrage_preempt /= num_repeats;
+    avg_time_inter /= num_repeats;
     avg_time_custom1 /= num_repeats;
+    //avg_result_custom2 /= num_repeats;
 
     avg_result_przeglad /= num_repeats;
     avg_result_rj /= num_repeats;
     avg_result_qj /= num_repeats;
     avg_result_schrage /= num_repeats;
-    avg_result_schrage_preempt /= num_repeats;
+    avg_result_inter /= num_repeats;
     avg_result_custom1 /= num_repeats;
+    //avg_result_custom2 /= num_repeats;
 
     avg_error_rj /= num_repeats;
     avg_error_qj /= num_repeats;
     avg_error_schrage /= num_repeats;
-    avg_error_schrage_preempt /= num_repeats;
+    avg_error_inter /= num_repeats;
     avg_error_custom1 /= num_repeats;
+    //avg_error_custom2 /= num_repeats;
 
     // Wyświetl wyniki
     std::cout << "SREDNIE WYNIKI DLA INSTANCJI: " << instance_size[i] << " (na podstawie " << num_repeats << " prob):\n";
@@ -796,8 +805,87 @@ for (int i = 0; i < instance_size.size(); i++) {
     std::cout << "Alg. sort r_j: wynik = " << avg_result_rj << ", blad = " << avg_error_rj << "%, czas = " << avg_time_rj << "s\n";
     std::cout << "Alg. sort q_j: wynik = " << avg_result_qj << ", blad = " << avg_error_qj << "%, czas = " << avg_time_qj << "s\n";
     std::cout << "Alg. schrage: wynik = " << avg_result_schrage << ", blad = " << avg_error_schrage << "%, czas = " << avg_time_schrage << "s\n";
-    std::cout << "Alg. schrage + przerwania: wynik = " << avg_result_schrage_preempt << ", blad = " << avg_error_schrage_preempt << "%, czas = " << avg_time_schrage_preempt << "s\n";
+    std::cout << "Alg. schrage + przerwania: wynik = " << avg_result_inter << ", blad = " << avg_error_inter << "%, czas = " << avg_time_inter << "s\n";
     std::cout << "Alg. wlasny 1: wynik = " << avg_result_custom1 << ", blad = " << avg_error_custom1 << "%, czas = " << avg_time_custom1 << "s\n";
+    //std::cout << "Alg. wlasny 2: wynik = " << avg_result_custom2 << ", blad = " << avg_error_custom2 << "%, czas = " << avg_time_custom2 << "s\n";
+    std::cout << "\n==========================================================\n\n";
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::vector<int> instance_size2 = {20, 50, 100};
+
+for (int i = 0; i < instance_size2.size(); i++) {
+    std::cout << "Wielkosc instancji: " << instance_size2[i] << std::endl;
+
+    double time_rj = 0, time_qj = 0, time_schrage = 0, time_inter = 0, time_custom1 = 0;
+    double result_rj = 0, result_qj = 0, result_schrage = 0, result_inter = 0, result_custom1 = 0;
+    double error_rj = 0, error_qj = 0, error_schrage = 0, error_inter = 0, error_custom1 = 0;
+    
+    p1.set_num_of_tasks(instance_size2[i]);
+    p1.generate_instance();
+    std::vector<int> results;
+    
+
+        // sort_rj
+        auto start = std::chrono::high_resolution_clock::now();
+        result_rj = p1.sort_rj_fun();
+        auto koniec = std::chrono::high_resolution_clock::now();
+        time_rj = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        results.push_back(result_rj);
+        
+
+        // sort_qj
+        start = std::chrono::high_resolution_clock::now();
+        result_qj = p1.sort_qj_fun();
+        koniec = std::chrono::high_resolution_clock::now();
+        time_qj = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        results.push_back(result_qj);
+       
+        // schrage
+        std::vector<Task> tasks = p1.get_inst();
+        start = std::chrono::high_resolution_clock::now();
+        result_schrage = p1.schrage_fun(tasks);
+        koniec = std::chrono::high_resolution_clock::now();
+        time_schrage = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        results.push_back(result_schrage);
+        
+        // schrage z przerwaniami
+        std::vector<Task> tasks1 = p1.get_inst();
+        start = std::chrono::high_resolution_clock::now();
+        result_inter = p1.schrage_interruption(tasks1);
+        koniec = std::chrono::high_resolution_clock::now();
+        time_inter = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+
+        // wlasna 1
+        start = std::chrono::high_resolution_clock::now();
+        result_custom1 = p1.create_algo_fun();
+        koniec = std::chrono::high_resolution_clock::now();
+        time_custom1 = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        results.push_back(result_custom1);
+
+        p1.taskClear();
+    
+
+    // Oblicz najlepszy wynik
+    
+    int best_result = *std::min_element(results.begin(), results.end());
+
+    //std::cout<<"best "<< best_result<<std::endl;
+
+
+    error_rj += static_cast<double>(std::abs(result_rj - best_result)) / best_result * 100;
+    error_qj += static_cast<double>(std::abs(result_qj - best_result)) / best_result * 100;
+    error_schrage += static_cast<double>(std::abs(result_schrage - best_result)) / best_result * 100;
+    error_custom1 += static_cast<double>(std::abs(result_custom1 - best_result)) / best_result * 100;
+
+    // Wyświetl wyniki
+    std::cout << "SREDNIE WYNIKI DLA INSTANCJI: " << instance_size2[i] << std::endl;
+    std::cout << "Alg. sort r_j: wynik = " << result_rj << ", blad = " << error_rj << "%, czas = " << time_rj << "s\n";
+    std::cout << "Alg. sort q_j: wynik = " << result_qj << ", blad = " << error_qj << "%, czas = " << time_qj << "s\n";
+    std::cout << "Alg. wlasny 1: wynik = " << result_custom1 << ", blad = " << error_custom1 << "%, czas = " << time_custom1 << "s\n";
+    std::cout << "Alg. schrage: wynik = " << result_schrage << ", blad = " << error_schrage << "%, czas = " << time_schrage << "s\n";
+    std::cout << "Alg. schrage + przerwania: wynik = " << result_inter << " , czas = " << time_inter << "s\n";
+    
     std::cout << "\n==========================================================\n\n";
 }
 
