@@ -32,16 +32,26 @@ class Problem{
     std::vector<Task> task_instance;
     int num_of_tasks=5;
     int C_max;
+    int upper_bound = INT_MAX;
+    int lower_bound = 0;
     public:
     void set_num_of_tasks(int number){
         num_of_tasks=number;
     }
-    void taskClear(){
-        task_instance.clear();
-    }
-
    std::vector<Task> solution;
 
+    // void generate_instance(){
+    //     for(int i =0; i < num_of_tasks; i++){
+    //         Task t1;
+    //         t1.j = i+1;
+    //         t1.pj = ( std::rand() % 15 )+1;
+    //         t1.rj = ( std::rand() % 15 );
+    //         t1.qj = ( std::rand() % 15 )+1;
+    
+    //         //std::cout<<t1.pj<<std::endl;
+    //         task_instance.push_back(t1);
+    //     }
+    // }
     void generate_instance(){
         for(int i =0; i < num_of_tasks; i++){
             Task t1;
@@ -54,7 +64,12 @@ class Problem{
             task_instance.push_back(t1);
         }
     }
-
+    void taskClear(){
+        task_instance.clear();
+    }
+    std::vector<Task> get_instance(){
+        return task_instance;
+    }
 
     Task get_task(int x){
         return task_instance[x];
@@ -99,16 +114,18 @@ class Problem{
     }
 
 
-    void sort_rj_fun(){
+    int sort_rj_fun(){
         sort_rj();
         int Cmax=calculate_Cmax();
-        std::cout<<"Cmax: "<<Cmax<<std::endl;
+        //std::cout<<"Cmax: "<<Cmax<<std::endl;
+        return Cmax;
     }
 
-    void sort_qj_fun(){
+    int sort_qj_fun(){
         sort_qj();
         int Cmax=calculate_Cmax();
-        std::cout<<"Cmax: "<<Cmax<<std::endl;
+        //std::cout<<"Cmax: "<<Cmax<<std::endl;
+        return Cmax;
     }
 
     void sort_qj(){
@@ -136,7 +153,7 @@ class Problem{
 
 
 
-    void next_perm_fun(){
+    int next_perm_fun(){
         int Cmax=0;
         int Cmin=INT_MAX;
         int bufor=0;
@@ -154,12 +171,13 @@ class Problem{
             }
 
         } while(next_permutation(task_instance.begin(), task_instance.end(), compareTasksJ));
-        std::cout<<Cmin<<" <- Cmin"<<std::endl;
+        //std::cout<<Cmin<<" <- Cmin"<<std::endl;
+        return Cmin;
     }
 
 
 
-    void schrage_fun(){
+    int schrage_fun(std::vector<Task>& tasks_sh){
         std::priority_queue<Task, std::vector<Task>, decltype(&compareTasksRj)> moundQueue(compareTasksRj);
         std::priority_queue<Task, std::vector<Task>, decltype(&compareTasksQj)> moundByQj(compareTasksQj);
         int time=0;
@@ -169,7 +187,7 @@ class Problem{
         int lastValue=0;
         int value;
         std::vector<Task> bufor;
-        for(auto& x : task_instance){          
+        for(auto& x : tasks_sh){          
             moundQueue.push(x);
         }
 
@@ -194,10 +212,12 @@ class Problem{
 
             }
         }
-        std::cout<<"Cmax -> "<<Cmax<<std::endl;
+        //std::cout<<"Cmax -> "<<Cmax<<std::endl;
+
+        return Cmax;
+        //nie udane proby ale szkoda mi je usuwac bo za duzo czasu nad nimi spedzilem wiec niech zasmiecaja kod
 
 
-        //nie udane proby ale szkoda mi je usuwac bo za duzo czasu nad nimi spedzilem wiec niech zasmiecaja kod xd
         // bufor.push_back(moundQueue.top());
         // moundQueue.pop();
         // moundQueue.push(bufor[0]);
@@ -307,8 +327,7 @@ class Problem{
 
 
     //okazuje sie ze to jest algorytm greedy?
-    // ^ XD
-    void create_algo_fun(){
+    int create_algo_fun(){
         sort_rj();
         //print_tasks();
         int Cmax_cr = 0;
@@ -321,7 +340,8 @@ class Problem{
         {
             result = select_and_remove_min_pj_qj(Cmax_cr);
         }
-        std::cout<<"Cmax final "<<Cmax_cr<<std::endl;
+        //std::cout<<"Cmax final "<<Cmax_cr<<std::endl;
+        return Cmax_cr;
     }
 
     int select_and_remove_max_pj_qj(int& Cmax) {
@@ -359,7 +379,7 @@ class Problem{
         }
         return max_index;
     }
-    void create_algo_fun_2(){
+    int create_algo_fun_2(){
         sort_rj();
         //print_tasks();
         int Cmax_cr = 0;
@@ -372,12 +392,13 @@ class Problem{
         {
             result = select_and_remove_max_pj_qj(Cmax_cr);
         }
-        std::cout<<"Cmax final 2 "<<Cmax_cr<<std::endl;
+        //std::cout<<"Cmax final 2 "<<Cmax_cr<<std::endl;
+        return Cmax_cr;
     }
 
 
 
-    void schrage_interruption(){
+    int schrage_interruption(std::vector<Task>& tasks_sh_in){
         std::priority_queue<Task, std::vector<Task>, decltype(&compareTasksRj)> moundQueue(compareTasksRj);
         std::priority_queue<Task, std::vector<Task>, decltype(&compareTasksQj)> moundByQj(compareTasksQj);
         int time=0;
@@ -386,9 +407,9 @@ class Problem{
         int last_qj=0;
         int lastValue=0;
         int value;
-        Task actual{0,0,0,INT_MAX}; // a to nie powinno sie nazywac actual i previous?
-        Task next;                  // ^no moze ale wtedy atual=previous i next=actual i chyba to tez nie tak do konca xd
-        for(auto& x : task_instance){          
+        Task actual{0,0,0,INT_MAX};
+        Task next;
+        for(auto& x : tasks_sh_in){          
             moundQueue.push(x);
         }
 
@@ -401,10 +422,8 @@ class Problem{
                 moundQueue.pop();
 
                 if(next.qj>actual.qj){
-                    //std::cout<<"actual pj: "<< actual.pj<<"  czas przed: "<<time <<std::endl;
                     actual.pj=time-next.rj;
                     time = next.rj;
-                    //std::cout<<"  czas po: "<<time <<std::endl;
                     if(actual.pj>0){
                         moundByQj.push(actual);
                     }
@@ -419,16 +438,105 @@ class Problem{
                 //solution.push_back(moundByQj.top());
                 next=moundByQj.top();
                 actual=next;
-                //std::cout<<"next.qj: "<<next.qj<<" next.pj: "<<next.pj<<std::endl;
                 time=time+moundByQj.top().pj;
                 Cmax=std::max(Cmax,time+moundByQj.top().qj);
-                //std::cout<<"czas po zmianie: "<<time<<"Cmax:  "<<Cmax<<std::endl;
                 moundByQj.pop();
                 //std::cout<<" a na koncu czas: "<<time<<" Cmax: "<<Cmax<<std::endl;
 
             }
         }
-        std::cout<<"Cmax -> "<<Cmax<<std::endl;
+        //std::cout<<"Cmax -> "<<Cmax<<std::endl;
+        return Cmax;
+    }
+    void Carlier_fun(){
+        std::vector<Task> tasks_copy(task_instance);
+        int Cmax = schrage_fun(tasks_copy);
+        int a = 0;
+        if(Cmax < upper_bound){
+            upper_bound = Cmax;
+        }
+        int time = 0;
+        int b = 0;
+        //szukam b, trzeba szukac od konca bo jest to najwiekszy indeks zadania, ktore koczy serie
+        for(int i = (tasks_copy.size()-1); i>=0; i--){
+            time = std::max(time, tasks_copy[i].rj)+tasks_copy[i].pj;
+            if(time+tasks_copy[i].qj == Cmax){
+                b = i;
+                break;
+            }
+        }
+        //szukam a
+        int sum_pj;
+        for(int i = 0; i <= b ; i++){
+            sum_pj = 0;
+            for(int s = i; s<=b; s++){
+                sum_pj = sum_pj +tasks_copy[s].pj;
+            }
+            if(tasks_copy[i].rj + sum_pj + tasks_copy[i].qj == Cmax){
+                a = i;
+                break;
+            }
+        }
+        //szukam c - ostatnie zadanie w przedziale <a,b> ktorego czas stygniecia jest mniejszy niz czas stgniecia od b
+        int c = 0;
+        for(int i = b; i>=a; i--){
+            if(tasks_copy[i].qj < tasks_copy[b].qj){
+                c = i;
+                break;
+            }
+        }
+        if(c == 0){
+            //nie da sie bardziej oganiczyc ale jeszcze nie wiem co tutaj dac 
+            return;
+        }
+        //szukamy h_K bez c
+        int r_K = INT_MAX;
+        int q_K = INT_MAX;
+        int sum_p_K = 0;
+        for(int K = (c+1); K<=b; K++){
+            if(tasks_copy[K].rj < r_K){
+                r_K = tasks_copy[K].rj;
+            }
+            if(tasks_copy[K].qj < q_K){
+                q_K = tasks_copy[K].qj;
+            }
+            
+            sum_p_K = sum_p_K + tasks_copy[K].pj;
+        }
+        // szukamy h_K z właczenie c do zbioru
+        int r_K_c = INT_MAX;
+        int q_K_c = INT_MAX;
+        int sum_p_K_c = 0;
+        for(int K = c; K<=b; K++){
+            if(tasks_copy[K].rj < r_K_c){
+                r_K_c = tasks_copy[K].rj;
+            }
+            if(tasks_copy[K].qj < q_K_c){
+                q_K_c = tasks_copy[K].qj;
+            }
+            
+            sum_p_K_c = sum_p_K_c + tasks_copy[K].pj;
+        }
+        int save_rj_c = tasks_copy[c].rj;
+        tasks_copy[c].rj = std::max(tasks_copy[c].rj, r_K + sum_p_K);
+        int h_K = r_K + sum_p_K + q_K;
+        int h_K_c = r_K_c + sum_p_K_c +  q_K_c;
+        lower_bound = schrage_interruption(tasks_copy);
+        lower_bound = std::max(std::max(h_K, h_K_c) , lower_bound);
+
+        if(lower_bound < upper_bound){
+            Carlier_fun();
+            //chyba jak ma buc rekurencja to nie moge inicjowac i zerowac zmiennych na poczatku
+        }
+        tasks_copy[c].rj = save_rj_c;
+        int save_qj_c = tasks_copy[c].qj;
+        tasks_copy[c].qj = std::max(tasks_copy[c].qj, q_K + sum_p_K);
+        lower_bound = schrage_interruption(tasks_copy);
+        lower_bound = std::max(std::max(h_K, h_K_c) , lower_bound);
+        if( lower_bound < upper_bound){
+            Carlier_fun();
+        }
+        tasks_copy[c].qj = save_qj_c;
     }
 
 };
@@ -452,11 +560,12 @@ int get_number_of_tasks(std::ifstream& cosik){
 
 
 int main(){
-    srand(time(NULL));
-    //int console=7;
-    /*##########################################                
-    ###    WCZYTANIE DANYCH/CONFIG OBIEKTU   ###
-    ##########################################*/ 
+    // srand(time(NULL));
+    // int console=7;
+    // int result = 0;
+    // /*##########################################                
+    // ###    WCZYTANIE DANYCH/CONFIG OBIEKTU   ###
+    // ##########################################*/ 
     // std::ifstream file("SCHRAGE1.dat");
     // if (!file.is_open()) {
     //     std::cerr << "Blad: Nie udalo sie otworzyc pliku!" << std::endl;
@@ -466,816 +575,232 @@ int main(){
     // p1.set_num_of_tasks(get_number_of_tasks(file));   // <- dziala igla
     // p1.read_from_file(file);
 
-    //p1.print_tasks();
+    // //p1.print_tasks();
 
 
-    /*###########################
-    ###    WYBOR ALGORYTMU    ###
-    ###########################*/
-    // std::cout<<"Wybierz algorytm:\n1 - Przeglad calkowity\n2 - Schrage\n";
-    // std::cin>>console;
-    //auto start = std::chrono::high_resolution_clock::now();
-    /*##############################
-    ###    PRZEGLAD CALKOWITY    ###
-    ##############################*/
+    // /*###########################
+    // ###    WYBOR ALGORYTMU    ###
+    // ###########################*/
+    // // std::cout<<"Wybierz algorytm:\n1 - Przeglad calkowity\n2 - Schrage\n";
+    // // std::cin>>console;
+    // auto start = std::chrono::high_resolution_clock::now();
+    // /*##############################
+    // ###    PRZEGLAD CALKOWITY    ###
+    // ##############################*/
     // if(console==1){
     //     p1.next_perm_fun();
     // }
-    /*#####################
-    ###    SCHRAGE      ###
-    #####################*/
+    // /*#####################
+    // ###    SCHRAGE      ###
+    // #####################*/
     // else if(console==2){
-    //     p1.schrage_fun();
+    //     std::vector<Task> tasks = p1.get_inst();
+    //     result = p1.schrage_fun(tasks);
+    //     std::cout<<"Cmax "<<result<<std::endl;
     // }
-    //ogolnie to te dwa sa mega nieoptymalne ale sam je wymyslilem hehe
-    //ty okazuje sie ze moj wymyslony create_algo_fun to jest jakis algorytm greedy, wiec jestem sprytny jednak,
-    // chociaz nadal jest on kiepski dla zestawu SHRAGE2.txt xd
-    //^ sznurowki cie zaraz wyprzedza
-    /*###############################################################
-    ###    Ktory to w koncu ten wlasciwy do sprawka potrzebne     ###
-    ###############################################################*/
+    // //ogolnie to te dwa sa mega nieoptymalne ale sam je wymyslilem hehe
+    // //ty okazuje sie ze moj wymyslony create_algo_fun to jest jakis algorytm greedy, wiec jestem sprytny jednak,
+    // // chociaz nadal jest on kiepski dla zestawu SHRAGE2.txt xd
     // else if(console == 3){
     //     p1.create_algo_fun();
     // }
-    /*#############################################
-    ###   Dobra, wzialem obydwa nie zaszkodzi   ###
-    #############################################*/
     // else if(console == 4){
     //     p1.create_algo_fun_2();
     // }
-    /*#####################################
-    ###    SCHRAGE (z przerwaniami)     ###
-    #####################################*/
     // else if(console ==5){
-    //     p1.schrage_interruption();
+    //     std::vector<Task> tasks = p1.get_inst();
+    //     result = p1.schrage_interruption(tasks);
+    //     std::cout<<"Cmax "<<result<<std::endl;
     // }
-    /*#################
-    ###   QJ SORT   ###
-    #################*/
     // else if(console==6){
     //     p1.sort_qj_fun();
     // }
-    /*#################
-    ###   RJ SORT   ###
-    #################*/
     // else if(console==7){
     //     p1.sort_rj_fun();
     // }
+    // auto koniec = std::chrono::high_resolution_clock::now();
+    // auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+        
+    // std::cout<<"Czas wykonania algorytmu: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    // //p1.print_solution(); //<- dla schrage interruption bez sensu jest to solution
 
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////// TO JEST GIT ALE POLICZYMY SREDNIA /////////////////////////////////////////
+    // std::vector<int> instance_size = {5, 7, 9, 10, 11};
+    // int result = 0;
+    // int result_przeglad = 0;
+    // for (int i = 0; i < instance_size.size(); i++){
+    //     std::cout<<"Wielkosc intacji: "<< instance_size[i]<<std::endl;
+    //     p1.set_num_of_tasks(instance_size[i]);
+    //     p1.generate_instance();
+    //     auto start = std::chrono::high_resolution_clock::now();
+    //     result_przeglad = p1.next_perm_fun();
+    //     auto koniec = std::chrono::high_resolution_clock::now();
+    //     auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     std::cout<<"Wynik algorytmu przeglad: "<<result_przeglad<<std::endl;
+    //     std::cout<<"Czas wykonania algorytmu przeglad: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     std::cout<<"\n";
+    //     start = std::chrono::high_resolution_clock::now();
+    //     result = p1.sort_rj_fun();
+    //     koniec = std::chrono::high_resolution_clock::now();
+    //     zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     std::cout<<"Wynik algorytmu sort r_j: "<<result<<std::endl;
+    //     std::cout<<"Blad algorytmu sort r_j: "<<static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad* 100<<"%"<<std::endl;
+    //     std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     std::cout<<"\n";
+    //     start = std::chrono::high_resolution_clock::now();
+    //     result = p1.sort_qj_fun();
+    //     koniec = std::chrono::high_resolution_clock::now();
+    //     zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     std::cout<<"Wynik algorytmu q_j: "<<result<<std::endl;
+    //     std::cout<<"Blad algorytmu sort q_j: "<<static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad* 100<<"%"<<std::endl;
+    //     std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     std::cout<<"\n";
 
-    /*################################################################################
-    ###   Tak szczerze to nie wiem czemu tego w pętli nie zrobiłem xddd            ###
-    ###   jakies zacmienie chyba mialem albo cos ale juz trudno, poradzisz sobie   ###   
-    ################################################################################*/
+    //     start = std::chrono::high_resolution_clock::now();
+    //     std::vector<Task> tasks = p1.get_inst();
+    //     result = p1.schrage_fun(tasks);
+    //     koniec = std::chrono::high_resolution_clock::now();
+    //     zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     std::cout<<"Wynik algorytmu schrage: "<<result<<std::endl;
+    //     std::cout<<"Blad algorytmu schrage: "<<static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad* 100<<"%"<<std::endl;
+    //     std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     std::cout<<"\n";
+    //     start = std::chrono::high_resolution_clock::now();
+    //     std::vector<Task> tasks1 = p1.get_inst();
+    //     result = p1.schrage_interruption(tasks1);
+    //     koniec = std::chrono::high_resolution_clock::now();
+    //     zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     std::cout<<"Wynik algorytmu schrage z przerwaniami: "<<result<<std::endl;
+    //     std::cout<<"Blad algorytmu schrage z przerwaniami: "<<static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad* 100<<"%"<<std::endl;
+    //     std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     std::cout<<"\n";
 
+    //     start = std::chrono::high_resolution_clock::now();
+    //     result = p1.create_algo_fun();
+    //     koniec = std::chrono::high_resolution_clock::now();
+    //     zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     std::cout<<"Wynik algorytmu wlasnego 1: "<<result<<std::endl;
+    //     std::cout<<"Blad algorytmu wlasnego 1: "<<static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad* 100<<"%"<<std::endl;
+    //     std::cout<<"Czas wykonania algorytmu wlasny 1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     std::cout<<"\n";
+    //     // start = std::chrono::high_resolution_clock::now();
+    //     // result = p1.create_algo_fun_2();
+    //     // koniec = std::chrono::high_resolution_clock::now();
+    //     // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    //     // std::cout<<"Wynik algorytmu wlasnego 2: "<<result<<std::endl;
+    //     // std::cout<<"Czas wykonania algorytmu wlasny 2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    //     // std::cout<<"\n";
 
-    p1.set_num_of_tasks(6);
-    p1.generate_instance();
-    auto start = std::chrono::high_resolution_clock::now();
-    p1.next_perm_fun();
-    auto koniec = std::chrono::high_resolution_clock::now();
-    auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu przeglad: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
+    //     p1.taskClear();
+    // }
+    std::vector<int> instance_size = {5, 7, 9, 10, 11};
+const int num_repeats = 50;
 
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
+for (int i = 0; i < instance_size.size(); i++) {
+    std::cout << "Wielkosc instancji: " << instance_size[i] << std::endl;
 
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+    double avg_time_przeglad = 0, avg_time_rj = 0, avg_time_qj = 0, avg_time_schrage = 0;
+    double avg_time_schrage_preempt = 0, avg_time_custom1 = 0;
+    double avg_result_przeglad = 0, avg_result_rj = 0, avg_result_qj = 0;
+    double avg_result_schrage = 0, avg_result_schrage_preempt = 0, avg_result_custom1 = 0;
+    double avg_error_rj = 0, avg_error_qj = 0, avg_error_schrage = 0;
+    double avg_error_schrage_preempt = 0, avg_error_custom1 = 0;
 
-    p1.taskClear();
+    for (int j = 0; j < num_repeats; j++) {
+        p1.set_num_of_tasks(instance_size[i]);
+        p1.generate_instance();
 
+        // Przegląd
+        auto start = std::chrono::high_resolution_clock::now();
+        int result_przeglad = p1.next_perm_fun();
+        auto koniec = std::chrono::high_resolution_clock::now();
+        auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        avg_time_przeglad += time;
+        avg_result_przeglad += result_przeglad;
 
-    std::cout<<"\n";    std::cout<<"\n";
+        // sort_rj
+        start = std::chrono::high_resolution_clock::now();
+        int result = p1.sort_rj_fun();
+        koniec = std::chrono::high_resolution_clock::now();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        avg_time_rj += time;
+        avg_result_rj += result;
+        avg_error_rj += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
+        // sort_qj
+        start = std::chrono::high_resolution_clock::now();
+        result = p1.sort_qj_fun();
+        koniec = std::chrono::high_resolution_clock::now();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        avg_time_qj += time;
+        avg_result_qj += result;
+        avg_error_qj += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
+        // schrage
+        std::vector<Task> tasks = p1.get_inst();
+        start = std::chrono::high_resolution_clock::now();
+        result = p1.schrage_fun(tasks);
+        koniec = std::chrono::high_resolution_clock::now();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        avg_time_schrage += time;
+        avg_result_schrage += result;
+        avg_error_schrage += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
-    p1.set_num_of_tasks(8);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 8"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.next_perm_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu przeglad: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
+        // schrage z przerwaniami
+        std::vector<Task> tasks1 = p1.get_inst();
+        start = std::chrono::high_resolution_clock::now();
+        result = p1.schrage_interruption(tasks1);
+        koniec = std::chrono::high_resolution_clock::now();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        avg_time_schrage_preempt += time;
+        avg_result_schrage_preempt += result;
+        avg_error_schrage_preempt += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
+        // wlasna 1
+        start = std::chrono::high_resolution_clock::now();
+        result = p1.create_algo_fun();
+        koniec = std::chrono::high_resolution_clock::now();
+        time = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start).count() * 1e-9;
+        avg_time_custom1 += time;
+        avg_result_custom1 += result;
+        avg_error_custom1 += static_cast<double>(std::abs(result - result_przeglad)) / result_przeglad * 100;
 
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
+        p1.taskClear();
+    }
 
-    p1.taskClear();
+    // Oblicz średnie
+    avg_time_przeglad /= num_repeats;
+    avg_time_rj /= num_repeats;
+    avg_time_qj /= num_repeats;
+    avg_time_schrage /= num_repeats;
+    avg_time_schrage_preempt /= num_repeats;
+    avg_time_custom1 /= num_repeats;
 
+    avg_result_przeglad /= num_repeats;
+    avg_result_rj /= num_repeats;
+    avg_result_qj /= num_repeats;
+    avg_result_schrage /= num_repeats;
+    avg_result_schrage_preempt /= num_repeats;
+    avg_result_custom1 /= num_repeats;
 
+    avg_error_rj /= num_repeats;
+    avg_error_qj /= num_repeats;
+    avg_error_schrage /= num_repeats;
+    avg_error_schrage_preempt /= num_repeats;
+    avg_error_custom1 /= num_repeats;
 
+    // Wyświetl wyniki
+    std::cout << "SREDNIE WYNIKI DLA INSTANCJI: " << instance_size[i] << " (na podstawie " << num_repeats << " prob):\n";
+    std::cout << "Alg. przeglad: wynik = " << avg_result_przeglad << ", czas = " << avg_time_przeglad << "s\n";
+    std::cout << "Alg. sort r_j: wynik = " << avg_result_rj << ", blad = " << avg_error_rj << "%, czas = " << avg_time_rj << "s\n";
+    std::cout << "Alg. sort q_j: wynik = " << avg_result_qj << ", blad = " << avg_error_qj << "%, czas = " << avg_time_qj << "s\n";
+    std::cout << "Alg. schrage: wynik = " << avg_result_schrage << ", blad = " << avg_error_schrage << "%, czas = " << avg_time_schrage << "s\n";
+    std::cout << "Alg. schrage + przerwania: wynik = " << avg_result_schrage_preempt << ", blad = " << avg_error_schrage_preempt << "%, czas = " << avg_time_schrage_preempt << "s\n";
+    std::cout << "Alg. wlasny 1: wynik = " << avg_result_custom1 << ", blad = " << avg_error_custom1 << "%, czas = " << avg_time_custom1 << "s\n";
+    std::cout << "\n==========================================================\n\n";
+}
 
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-
-
-    p1.set_num_of_tasks(10);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 10"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.next_perm_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu przeglad: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    p1.taskClear();
-
-
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-
-
-    p1.set_num_of_tasks(12);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 12"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-   // p1.next_perm_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu przeglad: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n\n";
-    p1.taskClear();
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-
-
-    p1.set_num_of_tasks(15);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 15"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-    p1.set_num_of_tasks(17);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 17"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-    p1.set_num_of_tasks(20);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 20"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-
-    p1.set_num_of_tasks(30);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 30"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
     
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-    std::cout<<"\n";    std::cout<<"\n";
-
-    p1.set_num_of_tasks(40);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 40"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-
-
-
-    p1.set_num_of_tasks(50);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 50"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-
-
-
-
-
-
-
-
-
-
-
-    p1.set_num_of_tasks(75);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 75"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-
-
-
-    p1.set_num_of_tasks(100);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 100"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-
-
-
-
-
-
-
-
-
-
-
-    p1.set_num_of_tasks(250);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 250"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";    std::cout<<"\n";
-    p1.taskClear();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    p1.set_num_of_tasks(750);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 750"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-    std::cout<<"\n";    std::cout<<"\n";
-    p1.set_num_of_tasks(1000);
-    p1.generate_instance();
-    std::cout<<"Teraz dla 1000"<<std::endl;
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_rj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort r_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.sort_qj_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu sort q_j: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    start = std::chrono::high_resolution_clock::now();
-    p1.schrage_interruption();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu schrage przerwania: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    p1.create_algo_fun();
-    koniec = std::chrono::high_resolution_clock::now();
-    zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    std::cout<<"Czas wykonania algorytmu wlasny1: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-    std::cout<<"\n";
-    // start = std::chrono::high_resolution_clock::now();
-    // p1.create_algo_fun_2();
-    // koniec = std::chrono::high_resolution_clock::now();
-    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
-    // std::cout<<"Czas wykonania algorytmu wlasny2: "<< zmierzonyCzas.count() * 1e-9<<" sekund"<<std::endl;
-
-    p1.taskClear();
-
-    //p1.print_solution(); //<- dla schrage interruption bez sensu jest to solution
     return 0;
 }
