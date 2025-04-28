@@ -1,0 +1,11 @@
+Problem jednomaszynowy
+
+n zadań j = {1,...,j,n}
+
+1 procesor
+
+pj - czas wykonywania zadania j
+rj - termin dostępności zadania j
+qj - czas stygnięcia zadania j
+Cmax - długość uszeregowania
+
