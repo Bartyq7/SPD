@@ -31,6 +31,7 @@ class Task{
     void set_machine(int c){
         machine=c;
     }
+
 };
 bool compareTasksPj(Task& a, Task & b){
     return a.get_pj()>b.get_pj();
@@ -45,9 +46,11 @@ class Machine{
 };
 
 class Problem{
-    int num_of_tasks=3;
+    int num_of_tasks=4;
     int num_of_machines=2;
     std::vector<Task> begin_instance;
+    std::vector<Task> qtas_perm_instance;
+    std::vector<Task> fqtas_perm_instance;
     //std::vector<Task> solution;
     public:
     void generate_instance(){
@@ -83,10 +86,11 @@ class Problem{
             //solution.push_back(begin_instance_copy[i]);
         }
     }
-    void LSA(std::vector<Task>& solution){
-        solution = begin_instance;
+    void LSA(std::vector<Task>& solution, int o){
+        if(o==1)
+            solution = begin_instance;
         //std::sort(solution.begin(), solution.end(), compareTasksPj);
-        print_tasks(solution);
+        //print_tasks(solution);
         std::vector<int> times_of_machines(num_of_machines);
         //ustawiamy pierwsze zadanie do pierwszej maszyny a potem juz po kolei do tej ktora na najnizszy czas
         solution[0].set_machine(0);
@@ -94,13 +98,13 @@ class Problem{
         for(int i = 1; i<num_of_tasks; i++){
             auto it = std::min_element(times_of_machines.begin(), times_of_machines.end());
             int index = std::distance(times_of_machines.begin(), it);
-            std::cout<<"przypisuje maszynie: "<<index<<" wartosc "<<solution[i].get_pj()<<std::endl;
+           // std::cout<<"przypisuje maszynie: "<<index<<" wartosc "<<solution[i].get_pj()<<std::endl;
             
             solution[i].set_machine(index);
             times_of_machines[index] += solution[i].get_pj();
-            for(int j = 0; j<num_of_machines; j++){
-                std::cout<<"aktuale czasy maszyny "<<j<<": "<<times_of_machines[j]<<std::endl;
-            }
+            // for(int j = 0; j<num_of_machines; j++){
+            //     std::cout<<"aktuale czasy maszyny "<<j<<": "<<times_of_machines[j]<<std::endl;
+            // }
         }
         //std::sort(solution.begin(), solution.end(), compareTasksJ);
         
@@ -212,18 +216,23 @@ class Problem{
             }
         }
     }
-    void next_perm_fun(){
+    void next_perm_fun(std::vector<Task>& solution, int o, int task_num){
+        if(o==1){
+            solution=begin_instance;
+            task_num=num_of_tasks;
+        }
         int best_Cmax = INT_MAX;
+        print_tasks(solution);
         std::vector<Task> best_solution;
 
-        int total_combinations = std::pow(num_of_machines, num_of_tasks);
+        int total_combinations = std::pow(num_of_machines, task_num);
     
         for(int i=0; i<total_combinations; i++){
-            std::vector<Task> current_solution = begin_instance;
+            std::vector<Task> current_solution = solution;
 
             int combination = i;
     
-            for(int j=0; j<num_of_tasks; j++){
+            for(int j=0; j<task_num; j++){
                 int assigned_machine = combination % num_of_machines;
                 current_solution[j].set_machine(assigned_machine);
                 combination /= num_of_machines;
@@ -238,7 +247,53 @@ class Problem{
     
         std::cout << "\nBest solution:\n";
         print_tasks(best_solution);
+        qtas_perm_instance=best_solution;
+        fqtas_perm_instance=best_solution;
         std::cout << "Cmax_best: " << best_Cmax << std::endl;
+    }
+
+
+    void qtas(std::vector<Task>& solution, int suggested_k){
+        int k=3;
+        solution=begin_instance;
+        if(suggested_k>0 && suggested_k<=num_of_tasks)
+            k=suggested_k;
+        std::sort(solution.begin(), solution.end(), compareTasksPj);
+        std::vector<Task> bufor;
+        bufor=solution;
+        bufor.erase(bufor.begin()+k, bufor.end());
+        next_perm_fun(bufor,2, k);
+        bufor=solution;
+        bufor.erase(bufor.begin(), bufor.begin()+k);
+        solution=qtas_perm_instance;
+        LSA(bufor,2);
+        solution.insert(solution.end(), bufor.begin(), bufor.end());
+    }
+
+    void fqtas(std::vector<Task>& solution,int suggested_k){
+        //std::cout<<"cosik1"<<std::endl;
+        int k=3;
+        solution=begin_instance;
+        if(suggested_k>0 && suggested_k<=num_of_tasks)
+            k=suggested_k;
+        std::vector<Task> original_pj=begin_instance;
+        //;std::cout<<"cosik2"<<std::endl;
+        for (int z=0; z<num_of_tasks; z++){
+            solution[z].set_pj(solution[z].get_pj()/k);
+        }
+ 
+        dynamic_prog_fun(solution);
+
+        for(int x=0; x<num_of_tasks; x++){
+            for(int y=0; y<num_of_tasks; y++){
+                //std::cout<<"cosik x y "<<x << y<<std::endl;
+                if(solution[x].get_j()==original_pj[y].get_j()){
+                    //std::cout<<"cosik wszedl"<<std::endl;
+                    solution[x].set_pj(original_pj[y].get_pj());
+                }
+            }
+        }
+
     }
 
 };
@@ -250,9 +305,11 @@ int main(){
     std::vector<Task> lpt_solution;
     std::vector<Task> lsa_solution;
     std::vector<Task> dynamic_solution;
+    std::vector<Task> qtas_solution;
+    std::vector<Task> fqtas_solution;
+    std::vector<Task> perm_solution;
     p1.generate_instance();
     p1.print_begin_instance();
-
     //p1.make_random_solution(random_solution);
     // int Cmax_rand = p1.count_Cmax(random_solution);
     // std::cout<< "Cmax_rand: " << Cmax_rand<<std::endl; 
@@ -266,14 +323,21 @@ int main(){
     
 
     //LSA
-    // p1.LSA(lsa_solution);
+    // p1.LSA(lsa_solution, 1);
     // int Cmax_lsa = p1.count_Cmax(lsa_solution);
     // std::cout<< "Cmax_lsa: " << Cmax_lsa<<std::endl; 
     // p1.print_tasks(lsa_solution);
     
-    p1.dynamic_prog_fun(dynamic_solution);
-    int Cmax_dyn = p1.count_Cmax(dynamic_solution);
-    std::cout<< "Cmax_dyn: " << Cmax_dyn<<std::endl; 
-    p1.print_tasks(dynamic_solution);
-    //p1.next_perm_fun();
+    // p1.dynamic_prog_fun(dynamic_solution);
+    // int Cmax_dyn = p1.count_Cmax(dynamic_solution);
+    // std::cout<< "Cmax_dyn: " << Cmax_dyn<<std::endl; 
+    // p1.print_tasks(dynamic_solution);
+
+    //Przeglad calkowity
+    //p1.next_perm_fun(perm_solution, 1,2);
+
+
+    //p1.qtas(qtas_solution,3);
+    p1.fqtas(fqtas_solution,3);
+    p1.print_tasks(fqtas_solution);
 }
