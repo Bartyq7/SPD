@@ -46,18 +46,18 @@ class Machine{
 };
 
 class Problem{
-    int num_of_tasks=4;
+    int num_of_tasks=27;
     int num_of_machines=2;
     std::vector<Task> begin_instance;
-    std::vector<Task> qtas_perm_instance;
-    std::vector<Task> fqtas_perm_instance;
+    std::vector<Task> ptas_perm_instance;
+    std::vector<Task> fptas_perm_instance;
     //std::vector<Task> solution;
     public:
     void generate_instance(){
         for(int i =0; i < num_of_tasks; i++){
             Task t1;
             t1.set_j(i+1);
-            t1.set_pj(( std::rand() % 15 )+1);
+            t1.set_pj(( std::rand() % 100 )+1);
             t1.set_machine(-1);
             //std::cout<<t1.pj<<std::endl;
             begin_instance.push_back(t1);
@@ -120,12 +120,12 @@ class Problem{
         for(int i = 1; i<num_of_tasks; i++){
             auto it = std::min_element(times_of_machines.begin(), times_of_machines.end());
             int index = std::distance(times_of_machines.begin(), it);
-            std::cout<<"przypisuje maszynie: "<<index<<" wartosc "<<solution[i].get_pj()<<std::endl;
+            //std::cout<<"przypisuje maszynie: "<<index<<" wartosc "<<solution[i].get_pj()<<std::endl;
             
             solution[i].set_machine(index);
             times_of_machines[index] += solution[i].get_pj();
             for(int j = 0; j<num_of_machines; j++){
-                std::cout<<"aktuale czasy maszyny "<<j<<": "<<times_of_machines[j]<<std::endl;
+                //std::cout<<"aktuale czasy maszyny "<<j<<": "<<times_of_machines[j]<<std::endl;
             }
         }
         std::sort(solution.begin(), solution.end(), compareTasksJ);
@@ -222,7 +222,7 @@ class Problem{
             task_num=num_of_tasks;
         }
         int best_Cmax = INT_MAX;
-        print_tasks(solution);
+        //print_tasks(solution);
         std::vector<Task> best_solution;
 
         int total_combinations = std::pow(num_of_machines, task_num);
@@ -245,15 +245,15 @@ class Problem{
             }
         }
     
-        std::cout << "\nBest solution:\n";
-        print_tasks(best_solution);
-        qtas_perm_instance=best_solution;
-        fqtas_perm_instance=best_solution;
-        std::cout << "Cmax_best: " << best_Cmax << std::endl;
+        //std::cout << "\nBest solution:\n";
+        //print_tasks(best_solution);
+        ptas_perm_instance=best_solution;
+        fptas_perm_instance=best_solution;
+        //std::cout << "Cmax_best: " << best_Cmax << std::endl;
     }
 
 
-    void qtas(std::vector<Task>& solution, int suggested_k){
+    void ptas(std::vector<Task>& solution, int suggested_k){
         int k=3;
         solution=begin_instance;
         if(suggested_k>0 && suggested_k<=num_of_tasks)
@@ -265,12 +265,12 @@ class Problem{
         next_perm_fun(bufor,2, k);
         bufor=solution;
         bufor.erase(bufor.begin(), bufor.begin()+k);
-        solution=qtas_perm_instance;
+        solution=ptas_perm_instance;
         LSA(bufor,2);
         solution.insert(solution.end(), bufor.begin(), bufor.end());
     }
 
-    void fqtas(std::vector<Task>& solution,int suggested_k){
+    void fptas(std::vector<Task>& solution,int suggested_k){
         //std::cout<<"cosik1"<<std::endl;
         int k=3;
         solution=begin_instance;
@@ -305,39 +305,132 @@ int main(){
     std::vector<Task> lpt_solution;
     std::vector<Task> lsa_solution;
     std::vector<Task> dynamic_solution;
-    std::vector<Task> qtas_solution;
-    std::vector<Task> fqtas_solution;
+    std::vector<Task> ptas_solution;
+    std::vector<Task> fptas_solution;
     std::vector<Task> perm_solution;
     p1.generate_instance();
-    p1.print_begin_instance();
+
+
+
+  
+    // //LPT
+    // auto start = std::chrono::high_resolution_clock::now();
+    // p1.LPT(lpt_solution);
+    // auto koniec = std::chrono::high_resolution_clock::now();
+    // int Cmax_lpt = p1.count_Cmax(lpt_solution);
+    // std::cout<< "Cmax_lpt: " << Cmax_lpt<<std::endl; 
+    // auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu LPT: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+
+    // //LSA
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.LSA(lsa_solution, 1);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // int Cmax_lsa = p1.count_Cmax(lsa_solution);
+    // std::cout<< "Cmax_lsa: " << Cmax_lsa<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu LSA: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+    // //PD
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.dynamic_prog_fun(dynamic_solution);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // int Cmax_dyn = p1.count_Cmax(dynamic_solution);
+    // std::cout<< "Cmax_dyn: " << Cmax_dyn<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu PD: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+
+    //Przeglad calkowity
+    auto start = std::chrono::high_resolution_clock::now();
+    p1.next_perm_fun(perm_solution, 1,2);
+    auto koniec = std::chrono::high_resolution_clock::now();
+    auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    std::cout<<"Czas wykonania algorytmu Przeglad calkowity: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+        
     //p1.make_random_solution(random_solution);
     // int Cmax_rand = p1.count_Cmax(random_solution);
     // std::cout<< "Cmax_rand: " << Cmax_rand<<std::endl; 
     // p1.print_tasks(random_solution);
+
+
     
-    //LPT
-    // p1.LPT(lpt_solution);
-    // int Cmax_lpt = p1.count_Cmax(lpt_solution);
-    // std::cout<< "Cmax_lpt: " << Cmax_lpt<<std::endl; 
-    // p1.print_tasks(lpt_solution);
+//     //p1.fptas(fptas_solution,3);
+//     //p1.print_tasks(fptas_solution);
+//     int n=10000;
+//     auto start = std::chrono::high_resolution_clock::now();
+//     //p1.ptas(ptas_solution,n/2);
+//     auto koniec = std::chrono::high_resolution_clock::now();
+//    // int Cmax_ptas = p1.count_Cmax(ptas_solution);
+//     //std::cout<< "Cmax_ptas: " << Cmax_ptas<<std::endl; 
+//     auto zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+//     //std::cout<<"Czas wykonania algorytmu ptas n/2: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+
+
+
+
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.fptas(fptas_solution,2);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // int Cmax_fptas = p1.count_Cmax(fptas_solution);
+    // std::cout<< "Cmax_fptas: " << Cmax_fptas<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu fptas n2: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+
+    // std::cout<<"\n\n\n";
+
+
     
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.fptas(fptas_solution,3);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // Cmax_fptas = p1.count_Cmax(fptas_solution);
+    // std::cout<< "Cmax_fptas: " << Cmax_fptas<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu fptas n3: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+    // std::cout<<"\n\n\n";
 
-    //LSA
-    // p1.LSA(lsa_solution, 1);
-    // int Cmax_lsa = p1.count_Cmax(lsa_solution);
-    // std::cout<< "Cmax_lsa: " << Cmax_lsa<<std::endl; 
-    // p1.print_tasks(lsa_solution);
+
     
-    // p1.dynamic_prog_fun(dynamic_solution);
-    // int Cmax_dyn = p1.count_Cmax(dynamic_solution);
-    // std::cout<< "Cmax_dyn: " << Cmax_dyn<<std::endl; 
-    // p1.print_tasks(dynamic_solution);
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.fptas(fptas_solution,4);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // Cmax_fptas = p1.count_Cmax(fptas_solution);
+    // std::cout<< "Cmax_fptas: " << Cmax_fptas<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu fptas n4: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
 
-    //Przeglad calkowity
-    //p1.next_perm_fun(perm_solution, 1,2);
 
 
-    //p1.qtas(qtas_solution,3);
-    p1.fqtas(fqtas_solution,3);
-    p1.print_tasks(fqtas_solution);
+
+
+
+
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.ptas(ptas_solution,2*n/3);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // Cmax_ptas = p1.count_Cmax(ptas_solution);
+    // std::cout<< "Cmax_ptas: " << Cmax_ptas<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu ptas 2n/3: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+
+
+
+
+    // start = std::chrono::high_resolution_clock::now();
+    // p1.ptas(ptas_solution,3*n/4);
+    // koniec = std::chrono::high_resolution_clock::now();
+    // Cmax_ptas = p1.count_Cmax(ptas_solution);
+    // std::cout<< "Cmax_ptas: " << Cmax_ptas<<std::endl; 
+    // zmierzonyCzas = std::chrono::duration_cast<std::chrono::nanoseconds>(koniec - start);
+    // std::cout<<"Czas wykonania algorytmu ptas 3n/4: "<< zmierzonyCzas.count() * 1e-9<<" sekund\n"<<std::endl;
+
+
+
+
 }
