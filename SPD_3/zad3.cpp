@@ -26,7 +26,7 @@ public:
 };
 
 class ProblemFlowShop{
-    int num_of_tasks=11;
+    int num_of_tasks=8;
     int num_of_machines =2;
     std::vector<Task> tasks;
 
@@ -241,6 +241,38 @@ void fneh_algorithm() {
         std::cout << std::endl;
 }
 
+void johnson_algorithm() {
+    std::vector<Task> left;
+    std::vector<Task> right;
+
+    for(const auto& task:tasks) {
+        if(task.get_pj(0)<=task.get_pj(1)){
+            left.push_back(task);
+        }
+        else{
+            right.push_back(task);
+        }
+    }
+
+
+    std::sort(left.begin(),left.end(), [](const Task& a,const Task& b){
+        return a.get_pj(0) <b.get_pj(0);
+    });
+
+    std::sort(right.begin(),right.end(),[](const Task& a,const Task& b){
+        return a.get_pj(1)> b.get_pj(1);
+    });
+
+
+    std::vector<Task> johnson_perm;
+    johnson_perm.insert(johnson_perm.end(),left.begin(),left.end());
+    johnson_perm.insert(johnson_perm.end(),right.begin(),right.end());
+
+    int cmax=calculate_Cmax(johnson_perm);
+    std::cout<<"Johnson: Cmax = "<<cmax<<"\nPermutacja: ";
+    for(const auto& t:johnson_perm) std::cout<<t.get_j()<<" ";
+    std::cout<<std::endl;
+}
 
 };
 
@@ -276,5 +308,13 @@ int main(){
 
     elapsed=end-start;
     std::cout<<"Czas wykonania algorytmu FNEH "<< elapsed.count()<<" sekund\n";
+     ///////////////////////////////JOHNSON/////////////////////////////////////
+    start=std::chrono::high_resolution_clock::now();
+    problem.johnson_algorithm();
+    end= std::chrono::high_resolution_clock::now();
+
+    elapsed= end- start;
+    std::cout<<"Czas wykonania algorytmu Johnsona "<< elapsed.count()<<" sekund\n";
+
     return 0;
 }
